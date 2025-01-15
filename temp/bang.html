@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="main-body"></div>
+    <script src="/api/link.js"></script>
+    <script>
+        let putArray = []; // Khai báo putArray bên ngoài các hàm để có thể sử dụng trong cả load_data và show
+
+        // Hàm để hiển thị các phần tử trong putArray
+        function show() {
+            const show = document.getElementById('main-body');
+
+            // Duyệt qua từng phần tử trong putArray để tạo các div
+            for (let post of putArray) {
+                show.innerHTML += `
+                <div id="${post}">${post}</div>`; // Tạo các div với id là topic (post)
+            }
+        }
+
+        // Hàm bất đồng bộ để tải dữ liệu từ Firebase
+        async function load_data() {
+            const response = await fetch(`${databaseUrl}/news.json`); // Gửi yêu cầu lấy dữ liệu từ database
+            const news = await response.json(); // Chuyển đổi phản hồi JSON thành object
+
+            const newsArray = Array.isArray(news)
+                ? news // Nếu là mảng thì dùng trực tiếp
+                : Object.entries(news || {}).map(([id, item]) => ({
+                    id,
+                    ...item,
+                })); // Nếu là object thì chuyển sang mảng
+
+            // Duyệt qua từng bài viết trong newsArray và lấy các topic duy nhất
+            putArray = []; // Reset lại mảng putArray mỗi lần tải dữ liệu mới
+            for (let item of newsArray) {
+                let topic = item.topic;
+
+                // Kiểm tra xem topic đã có trong putArray chưa
+                if (!putArray.includes(topic)) {
+                    // Nếu chưa có, thêm vào putArray
+                    putArray.push(topic);
+                }
+            }
+
+            console.log(putArray); // In ra các topic duy nhất
+        }
+
+        // Gọi load_data() và sau khi hoàn thành, gọi show()
+        async function init() {
+            await load_data(); // Đợi load_data() hoàn thành
+            show(); // Gọi show() sau khi load_data hoàn tất
+        }
+
+        init(); // Khởi tạo
+    </script>
+
+
+    </script>
+</body>
+
+</html>
